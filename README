@@ -19,9 +19,10 @@ $ CC=gcc-4.5 CXX=g++-4.5 make -j4
 2.SystemUIのソースを編集してSystemUIだけビルドする
 まず、同梱のSystemUIディレクトリで~/src/android/frameworks/base/packages/SystemUIを上書きする
 (もとから入っているものを使うとNullPointerExceptionが発生してしまって動かない?)
-次に、SystemUI以下を自由に編集するし、
+次に、SystemUI以下を自由に編集し、
 $ mmm ~/src/android/frameworks/base/packages/SystemUI/
 でSystemUIをコンパイルする。
+(mmmコマンドは source build/envsetup.sh を実行することで使えるようになるコマンドです)
 ~/src/android/out/target/product/maguro/system/app/SystemUI.apk
 にコンパイルされたものができる。
 
