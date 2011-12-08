@@ -1,0 +1,44 @@
+独自のSystemUI.apkの作成方法
+
+<前提環境>
+Ubuntu11.10 x64
+Androidの最新版をビルドする環境が整っていること
+apktoolの最新版が入っており、pathが通っていること
+p7zipパッケージがインストールされていること
+
+Androidのソースは~/src/android以下に置かれているとして説明する
+
+<手順>
+1.一度AndroidをGalaxy Nexus向けにビルドする
+$ cd ~/src/android
+$ source build/envsetup.sh
+$ lunch full_maguro-userdebug
+$ CC=gcc-4.5 CXX=g++-4.5 make -j4
+(CC=gcc-4.5 CXX=g++-4.5としているのはUbuntu用gcc,g++の最新バージョンでビルドすると途中でエラーが出るため)
+
+2.SystemUIのソースを編集してSystemUIだけビルドする
+まず、同梱のSystemUIディレクトリで~/src/android/frameworks/base/packages/SystemUIを上書きする
+(もとから入っているものを使うとNullPointerExceptionが発生してしまって動かない?)
+次に、SystemUI以下を自由に編集するし、
+$ mmm ~/src/android/frameworks/base/packages/SystemUI/
+でSystemUIをコンパイルする。
+~/src/android/out/target/product/maguro/system/app/SystemUI.apk
+にコンパイルされたものができる。
+
+3.SystemUI.apkを署名する
+手順2で作成したSystemUI.apkをそのまま端末に入れても動かない。
+SystemUIはAndroidManifest.xmlで<manifest android:sharedUserId=“android.uid.system">
+を指定しているのだが、そのようなアプリはAndroidをコンパイルする際に使用したキーで署名されていなければ動かない。
+手順2で作成されたものと元から入っているものとでは署名が異なるので手順2で作成したものは動かないのである。
+同梱のsign_system_apk.plはもとから入っているsystemアプリと同じ署名を対象のアプリに付与するスクリプトである。
+使用するにはまず、端末から/system/app/SystemUI.apkを抜き取り、その後
+$ sign_system_apk.pl <抜き取ったSystemUI.apkへのパス> <新しく作成したSystemUI.apkへのパス> <出力ファイル名>
+と実行する。
+例えば、~/work以下に以下のファイルがあるとし、
+~/work/sign_system_apk.pl   : 同梱のスクリプト
+~/work/SystemUI.orig.apk    : 端末から抜き取ったSystemUI.apk
+~/work/SystemUI.new.apk     : 手順2で作成したSystemUI.apk
+$ cd ~/work/
+$ ./sign_system_apk.pl ./SystemUI.orig.apk ./SystemUI.new.apk ./SystemUI.apk
+と実行すれば、~/workに署名されたSystemUI.apkが作成される。
+あとはこれを/system/app/に置けば動作するはずである。
